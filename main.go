@@ -77,6 +77,37 @@ func main() {
 		})
 	})
 
+	r.PATCH("/users/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		var newuser User
+
+		err := ctx.BindJSON(&newuser)
+		if err != nil {
+			ctx.JSON(400, Response{
+				Success: false,
+				Message: "Invalid JSON body!",
+			})
+			return
+		}
+
+		for i, user := range users{
+			if fmt.Sprint(user.Id) == id {
+				users = append(users[:i], []User{newuser}...)
+				ctx.JSON(200, Response{
+					Success: true,
+					Message: "Succes updated user!",
+					Data:  []User{newuser},
+				})
+				return
+			}
+		}
+
+		ctx.JSON(404, Response{
+			Success: false,
+			Message: "User not found",
+		})
+	})
+
 	r.DELETE("/users/:id", func(ctx *gin.Context) {
 		id := ctx.Param("id")
 		for i, user := range users{
