@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,7 +16,7 @@ type User struct {
 type Response struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
-	Data  []User `json:"data"`
+	Data    []User `json:"data"`
 }
 
 var users = []User{
@@ -24,7 +26,6 @@ var users = []User{
 	{Id: 4, Name: "knakri", Email: "aw@gmail.com", Password: "aw123"},
 }
 
-
 func main() {
 	r := gin.Default()
 
@@ -32,7 +33,26 @@ func main() {
 		ctx.JSON(200, Response{
 			Success: true,
 			Message: "success!",
-			Data: users,
+			Data:    users,
+		})
+	})
+
+	r.GET("/users/:id", func(ctx *gin.Context) {
+		id := ctx.Param("id")
+		for _, user := range users{
+			if fmt.Sprint(user.Id) == id {
+				ctx.JSON(200, Response{
+					Success: true,
+					Message: "Getting data user!",
+					Data:  []User{user},
+				})
+				return
+			}
+		}
+
+		ctx.JSON(404, Response{
+			Success: false,
+			Message: "User not found",
 		})
 	})
 
