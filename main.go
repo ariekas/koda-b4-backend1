@@ -136,7 +136,7 @@ func main() {
 		newuser.Email = ctx.PostForm("email")
 		newuser.Password = ctx.PostForm("password")
 
-		if !strings.Contains(newuser.Email, "@"){
+		if !strings.Contains(newuser.Email, "@") {
 			ctx.JSON(400, Response{
 				Success: false,
 				Message: "Wrong email type",
@@ -161,7 +161,25 @@ func main() {
 	})
 
 	r.POST("/login", func(ctx *gin.Context) {
-		
+		var login User
+		login.Email = ctx.PostForm("email")
+		login.Password = ctx.PostForm("password")
+
+		for _, user := range users {
+			if user.Email == login.Email && user.Password == login.Password {
+				ctx.JSON(200, Response{
+					Success: true,
+					Message: "Login berhasil!",
+					Data:    []User{user},
+				})
+				return
+			}else{
+				ctx.JSON(404, Response{
+					Success: false,
+					Message: "Email atau password salah!",
+				})
+			}
+		}
 	})
 
 	r.Run(":8080")
