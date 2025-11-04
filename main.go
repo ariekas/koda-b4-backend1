@@ -56,5 +56,26 @@ func main() {
 		})
 	})
 
+	r.POST("/users", func(ctx *gin.Context) {
+		var newuser User
+
+		err := ctx.BindJSON(&newuser)
+		if err != nil {
+			ctx.JSON(400, Response{
+				Success: false,
+				Message: "Invalid JSON body!",
+			})
+			return
+		}
+		
+		users = append(users, newuser)
+
+		ctx.JSON(200, Response{
+			Success: true,
+			Message: "Success Create User!",
+			Data:    []User{newuser},
+		})
+	})
+
 	r.Run(":8080")
 }
