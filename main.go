@@ -2,21 +2,22 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
 
 type User struct {
-	Id       int    `json:"id"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Id       int    `form:"id"`
+	Name     string `form:"name"`
+	Email    string `form:"email"`
+	Password string `form:"password"`
 }
 
 type Response struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
-	Data    []User `json:"data"`
+	Data    any    `json:"data"`
 }
 
 var users = []User{
@@ -39,12 +40,12 @@ func main() {
 
 	r.GET("/users/:id", func(ctx *gin.Context) {
 		id := ctx.Param("id")
-		for _, user := range users{
+		for _, user := range users {
 			if fmt.Sprint(user.Id) == id {
 				ctx.JSON(200, Response{
 					Success: true,
 					Message: "Getting data user!",
-					Data:  []User{user},
+					Data:    []User{user},
 				})
 				return
 			}
@@ -67,7 +68,7 @@ func main() {
 			})
 			return
 		}
-		
+
 		users = append(users, newuser)
 
 		ctx.JSON(200, Response{
@@ -90,13 +91,13 @@ func main() {
 			return
 		}
 
-		for i, user := range users{
+		for i, user := range users {
 			if fmt.Sprint(user.Id) == id {
 				users = append(users[:i], []User{newuser}...)
 				ctx.JSON(200, Response{
 					Success: true,
 					Message: "Succes updated user!",
-					Data:  []User{newuser},
+					Data:    []User{newuser},
 				})
 				return
 			}
@@ -110,7 +111,7 @@ func main() {
 
 	r.DELETE("/users/:id", func(ctx *gin.Context) {
 		id := ctx.Param("id")
-		for i, user := range users{
+		for i, user := range users {
 			if fmt.Sprint(user.Id) == id {
 				users = append(users[:i], users[i+1:]...)
 
@@ -126,6 +127,41 @@ func main() {
 			Success: false,
 			Message: "User not found",
 		})
+	})
+
+	r.POST("/register", func(ctx *gin.Context) {
+		var newuser User
+		newuser.Id = len(users) + 1
+		newuser.Name = ctx.PostForm("name")
+		newuser.Email = ctx.PostForm("email")
+		newuser.Password = ctx.PostForm("password")
+
+		if !strings.Contains(newuser.Email, "@"){
+			ctx.JSON(400, Response{
+				Success: false,
+				Message: "Wrong email type",
+			})
+			return
+		}
+
+		if len(newuser.Password) < 8 {
+			ctx.JSON(400, Response{
+				Success: false,
+				Message: "Password Much 8 carakter",
+			})
+			return
+		}
+		users = append(users, newuser)
+
+		ctx.JSON(200, Response{
+			Success: true,
+			Message: "Success Create User!",
+			Data:    []User{newuser},
+		})
+	})
+
+	r.POST("/login", func(ctx *gin.Context) {
+		
 	})
 
 	r.Run(":8080")
