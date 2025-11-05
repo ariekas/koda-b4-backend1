@@ -8,6 +8,13 @@ import (
 	"github.com/matthewhartstonge/argon2"
 )
 
+// GetAll godoc
+// @Summary Get all users
+// @Description Mengambil semua data user
+// @Tags Users
+// @Produce json
+// @Success 200 {object} models.Response
+// @Router /users [get]
 func GetAll(ctx *gin.Context){
 	ctx.JSON(200, models.Response{
 		Success: true,
@@ -16,6 +23,15 @@ func GetAll(ctx *gin.Context){
 	})
 }
 
+// GetById godoc
+// @Summary Get user by ID
+// @Description Mengambil data user berdasarkan ID
+// @Tags Users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} models.Response
+// @Failure 404 {object} models.Response
+// @Router /users/{id} [get]
 func GetById(ctx *gin.Context){
 	id := ctx.Param("id")
 	for _, user := range models.Users {
@@ -35,6 +51,16 @@ func GetById(ctx *gin.Context){
 	})
 }
 
+// Create godoc
+// @Summary Create new user
+// @Description Membuat user baru
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body models.User true "User Data"
+// @Success 200 {object} models.Response
+// @Failure 400 {object} models.Response
+// @Router /users [post]
 func Create(ctx *gin.Context){
 	var newuser models.User
 	argon := argon2.DefaultConfig()
@@ -67,6 +93,18 @@ func Create(ctx *gin.Context){
 	})
 }
 
+// Edit godoc
+// @Summary Update user by ID
+// @Description Mengupdate data user berdasarkan ID
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param user body models.User true "User Data"
+// @Success 200 {object} models.Response
+// @Failure 400 {object} models.Response
+// @Failure 404 {object} models.Response
+// @Router /users/{id} [put]
 func Edit(ctx *gin.Context){
 	id := ctx.Param("id")
 	argon := argon2.DefaultConfig()
@@ -115,6 +153,15 @@ func Edit(ctx *gin.Context){
 	})
 }
 
+// Delete godoc
+// @Summary Delete user by ID
+// @Description Menghapus user berdasarkan ID
+// @Tags Users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} models.Response
+// @Failure 404 {object} models.Response
+// @Router /users/{id} [delete]
 func Delete(ctx *gin.Context){
 	id := ctx.Param("id")
 	for i, user := range models.Users {

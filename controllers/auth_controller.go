@@ -8,6 +8,18 @@ import (
 	"github.com/matthewhartstonge/argon2"
 )
 
+// AuthLogin godoc
+// @Summary Login user
+// @Description Melakukan login user menggunakan email dan password
+// @Tags Auth
+// @Accept multipart/form-data
+// @Produce json
+// @Param email formData string true "Email user"
+// @Param password formData string true "Password user"
+// @Success 200 {object} models.Response "Login berhasil"
+// @Failure 400 {object} models.Response "Email atau password salah"
+// @Failure 404 {object} models.Response "User tidak ditemukan"
+// @Router /auth/login [post]
 func AuthLogin(ctx *gin.Context){
 	var login models.User
 		login.Email = ctx.PostForm("email")
@@ -39,6 +51,18 @@ func AuthLogin(ctx *gin.Context){
 		})
 }
 
+// AuthRegister godoc
+// @Summary Register user baru
+// @Description Mendaftarkan user baru menggunakan name, email, dan password
+// @Tags Auth
+// @Accept multipart/form-data
+// @Produce json
+// @Param name formData string true "Nama lengkap"
+// @Param email formData string true "Email user"
+// @Param password formData string true "Password minimal 8 karakter"
+// @Success 200 {object} models.Response "Registrasi berhasil"
+// @Failure 400 {object} models.Response "Input tidak valid"
+// @Router /auth/register [post]
 func AuthRegister(ctx *gin.Context){
 	argon := argon2.DefaultConfig()
 	var newuser models.User
