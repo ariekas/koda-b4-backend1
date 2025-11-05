@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/matthewhartstonge/argon2"
 )
 
 func GetAll(ctx *gin.Context){
@@ -36,6 +37,7 @@ func GetById(ctx *gin.Context){
 
 func Create(ctx *gin.Context){
 	var newuser models.User
+	argon := argon2.DefaultConfig()
 
 	err := ctx.BindJSON(&newuser)
 	if err != nil {
@@ -45,6 +47,16 @@ func Create(ctx *gin.Context){
 		})
 		return
 	}
+
+	encoded, err := argon.HashEncoded([]byte(newuser.Password))
+	if err != nil {
+		ctx.JSON(400, models.Response{
+			Success: false,
+			Message: "",
+		})
+	}
+
+	newuser.Password = string(encoded)
 
 	models.Users = append(models.Users, newuser)
 
@@ -57,6 +69,7 @@ func Create(ctx *gin.Context){
 
 func Edit(ctx *gin.Context){
 	id := ctx.Param("id")
+	argon := argon2.DefaultConfig()
 	var newuser models.User
 
 	err := ctx.BindJSON(&newuser)
@@ -70,11 +83,27 @@ func Edit(ctx *gin.Context){
 
 	for i, user := range models.Users {
 		if fmt.Sprint(user.Id) == id {
-			models.Users = append(models.Users[:i], []models.User{newuser}...)
+			if newuser.Name != "" {
+				models.Users[i].Name = newuser.Name
+			}
+			if newuser.Email != "" {
+				models.Users[i].Email = newuser.Email
+			}
+			if newuser.Password != "" {
+				encoded, err := argon.HashEncoded([]byte(newuser.Password))
+				if err != nil {
+					ctx.JSON(400, models.Response{
+						Success: false,
+						Message: "Error hashing password",
+					})
+					return
+				}
+				models.Users[i].Password = string(encoded)
+			}
 			ctx.JSON(200, models.Response{
 				Success: true,
-				Message: "Succes updated user!",
-				Data:    []models.User{newuser},
+				Message: "Success updated user!",
+				Data:    []models.User{models.Users[i]},
 			})
 			return
 		}

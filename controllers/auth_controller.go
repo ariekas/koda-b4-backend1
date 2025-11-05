@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/matthewhartstonge/argon2"
 )
 
 func AuthLogin(ctx *gin.Context){
@@ -13,23 +14,33 @@ func AuthLogin(ctx *gin.Context){
 		login.Password = ctx.PostForm("password")
 
 		for _, user := range models.Users {
-			if user.Email == login.Email && user.Password == login.Password {
+			if user.Email == login.Email {
+				ok, err := argon2.VerifyEncoded([]byte(login.Password), []byte(user.Password))
+				if err != nil || !ok {
+					ctx.JSON(400, models.Response{
+						Success: false,
+						Message: "Wrong email or password",
+					})
+					return
+				}
+	
 				ctx.JSON(200, models.Response{
 					Success: true,
-					Message: "Login berhasil!",
+					Message: "Success Login!",
 					Data:    []models.User{user},
 				})
 				return
-			}else{
-				ctx.JSON(404, models.Response{
-					Success: false,
-					Message: "Email atau password salah!",
-				})
 			}
 		}
+	
+		ctx.JSON(404, models.Response{
+			Success: false,
+			Message: "User Not Found!",
+		})
 }
 
 func AuthRegister(ctx *gin.Context){
+	argon := argon2.DefaultConfig()
 	var newuser models.User
 		newuser.Id = len(models.Users) + 1
 		newuser.Name = ctx.PostForm("name")
@@ -51,6 +62,17 @@ func AuthRegister(ctx *gin.Context){
 			})
 			return
 		}
+
+		encoded, err := argon.HashEncoded([]byte(newuser.Password))
+		if err != nil {
+			ctx.JSON(400, models.Response{
+				Success: false,
+				Message: "",
+				})
+		}
+
+		newuser.Password = string(encoded)
+
 		models.Users = append(models.Users, newuser)
 
 		ctx.JSON(200, models.Response{
