@@ -6,6 +6,7 @@ type User struct {
 	Email    string `form:"email"`
 	Password string `form:"password"`
 	ProfilePic string `form:"profile"`
+	Token string 
 }
 
 var Users = []User{}

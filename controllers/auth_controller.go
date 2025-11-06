@@ -1,10 +1,14 @@
 package controllers
 
 import (
+	"crud/middelware"
 	"crud/models"
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/matthewhartstonge/argon2"
 )
 
@@ -20,35 +24,47 @@ import (
 // @Failure 400 {object} models.Response "Email atau password salah"
 // @Failure 404 {object} models.Response "User tidak ditemukan"
 // @Router /login [post]
-func AuthLogin(ctx *gin.Context){
-	var login models.User
-		login.Email = ctx.PostForm("email")
-		login.Password = ctx.PostForm("password")
+func AuthLogin(ctx *gin.Context) {
+	godotenv.Load()
+	JWTtoken := os.Getenv("APP_SECRET")
 
-		for _, user := range models.Users {
-			if user.Email == login.Email {
-				ok, err := argon2.VerifyEncoded([]byte(login.Password), []byte(user.Password))
-				if err != nil || !ok {
-					ctx.JSON(400, models.Response{
-						Success: false,
-						Message: "Wrong email or password",
-					})
-					return
-				}
-	
-				ctx.JSON(200, models.Response{
-					Success: true,
-					Message: "Success Login!",
-					Data:    []models.User{user},
+	var login models.User
+	login.Email = ctx.PostForm("email")
+	login.Password = ctx.PostForm("password")
+
+	for _, user := range models.Users {
+		if user.Email == login.Email {
+			ok, err := argon2.VerifyEncoded([]byte(login.Password), []byte(user.Password))
+			if err != nil || !ok {
+				ctx.JSON(400, models.Response{
+					Success: false,
+					Message: "Wrong email or password",
 				})
 				return
 			}
+
+			token, err := middelware.GenerateToken(JWTtoken)
+			if err != nil {
+				ctx.JSON(400, models.Response{
+					Success: false,
+					Message: "Failed generate token",
+				})
+				return
+			}
+
+			ctx.JSON(200, models.Response{
+				Success: true,
+				Message: "Success Login!",
+				Data:  fmt.Sprintf("Token : %s", token),
+			})
+			return
 		}
-	
-		ctx.JSON(404, models.Response{
-			Success: false,
-			Message: "User Not Found!",
-		})
+	}
+
+	ctx.JSON(404, models.Response{
+		Success: false,
+		Message: "User Not Found!",
+	})
 }
 
 // AuthRegister godoc
@@ -63,45 +79,45 @@ func AuthLogin(ctx *gin.Context){
 // @Success 200 {object} models.Response "Registrasi berhasil"
 // @Failure 400 {object} models.Response "Input tidak valid"
 // @Router /register [post]
-func AuthRegister(ctx *gin.Context){
+func AuthRegister(ctx *gin.Context) {
 	argon := argon2.DefaultConfig()
 	var newuser models.User
-		newuser.Id = len(models.Users) + 1
-		newuser.Name = ctx.PostForm("name")
-		newuser.Email = ctx.PostForm("email")
-		newuser.Password = ctx.PostForm("password")
+	newuser.Id = len(models.Users) + 1
+	newuser.Name = ctx.PostForm("name")
+	newuser.Email = ctx.PostForm("email")
+	newuser.Password = ctx.PostForm("password")
 
-		if !strings.Contains(newuser.Email, "@") {
-			ctx.JSON(400, models.Response{
-				Success: false,
-				Message: "Wrong email type",
-			})
-			return
-		}
-
-		if len(newuser.Password) < 8 {
-			ctx.JSON(400, models.Response{
-				Success: false,
-				Message: "Password Much 8 carakter",
-			})
-			return
-		}
-
-		encoded, err := argon.HashEncoded([]byte(newuser.Password))
-		if err != nil {
-			ctx.JSON(400, models.Response{
-				Success: false,
-				Message: "",
-				})
-		}
-
-		newuser.Password = string(encoded)
-
-		models.Users = append(models.Users, newuser)
-
-		ctx.JSON(200, models.Response{
-			Success: true,
-			Message: "Success Create User!",
-			Data:    []models.User{newuser},
+	if !strings.Contains(newuser.Email, "@") {
+		ctx.JSON(400, models.Response{
+			Success: false,
+			Message: "Wrong email type",
 		})
+		return
+	}
+
+	if len(newuser.Password) < 8 {
+		ctx.JSON(400, models.Response{
+			Success: false,
+			Message: "Password Much 8 carakter",
+		})
+		return
+	}
+
+	encoded, err := argon.HashEncoded([]byte(newuser.Password))
+	if err != nil {
+		ctx.JSON(400, models.Response{
+			Success: false,
+			Message: "",
+		})
+	}
+
+	newuser.Password = string(encoded)
+
+	models.Users = append(models.Users, newuser)
+
+	ctx.JSON(200, models.Response{
+		Success: true,
+		Message: "Success Create User!",
+		Data:    []models.User{newuser},
+	})
 }
