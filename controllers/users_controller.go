@@ -184,11 +184,11 @@ func Delete(ctx *gin.Context) {
 
 // UploadProfile godoc
 // @Summary Upload dan update profile user
-// @Description Update data user (name, email, password) dan upload foto profil (single image upload)
+// @Description upload foto profil
 // @Tags Users
 // @Accept multipart/form-data
 // @Produce json
-// @Param pic formData file false "Foto profil user (image)"
+// @Param pic formData file false "Foto profil user max:2MB (image)"
 // @Success 200 {object} models.Response
 // @Failure 400 {object} models.Response
 // @Failure 404 {object} models.Response
