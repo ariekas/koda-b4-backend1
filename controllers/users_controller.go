@@ -219,6 +219,15 @@ func UploadProfile(ctx *gin.Context) {
 			}
 			file, _ := ctx.FormFile("pic")
 			ctx.SaveUploadedFile(file, "./images/pic/"+file.Filename)
+
+			if file.Size > 2*1024*1024 {
+				ctx.JSON(400, models.Response{
+					Success: false,
+					Message: "File too large. Max size is 2MB.",
+				})
+				return
+			}
+
 			models.Users[i].ProfilePic = file.Filename
 
 			ctx.JSON(200, models.Response{
@@ -229,4 +238,8 @@ func UploadProfile(ctx *gin.Context) {
 			return
 		}
 	}
+	ctx.JSON(404, models.Response{
+		Success: false,
+		Message: "User not found",
+	})
 }
