@@ -217,7 +217,13 @@ func UploadProfile(ctx *gin.Context) {
 				}
 				models.Users[i].Password = string(encoded)
 			}
-			file, _ := ctx.FormFile("pic")
+			file, err := ctx.FormFile("pic")
+			if err != nil {
+				ctx.JSON(400, models.Response{
+					Success: false,
+					Message: "Error : Failed to create profile",
+				})
+			}
 			ctx.SaveUploadedFile(file, "./images/pic/"+file.Filename)
 
 			if file.Size > 2*1024*1024 {
