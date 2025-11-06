@@ -13,6 +13,7 @@ import (
 func main() {
 	r := gin.Default()
 
+	r.MaxMultipartMemory = 8 << 20
 	r.Use(controllers.CrosMiddelware)
 	r.Use(controllers.AllowPrelight)
 	routes.AuthRouter(r)

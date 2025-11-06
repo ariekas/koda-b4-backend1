@@ -15,7 +15,7 @@ import (
 // @Produce json
 // @Success 200 {object} models.Response
 // @Router /users [get]
-func GetAll(ctx *gin.Context){
+func GetAll(ctx *gin.Context) {
 	ctx.JSON(200, models.Response{
 		Success: true,
 		Message: "success!",
@@ -32,7 +32,7 @@ func GetAll(ctx *gin.Context){
 // @Success 200 {object} models.Response
 // @Failure 404 {object} models.Response
 // @Router /users/{id} [get]
-func GetById(ctx *gin.Context){
+func GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	for _, user := range models.Users {
 		if fmt.Sprint(user.Id) == id {
@@ -61,11 +61,11 @@ func GetById(ctx *gin.Context){
 // @Success 200 {object} models.Response
 // @Failure 400 {object} models.Response
 // @Router /users [post]
-func Create(ctx *gin.Context){
-	var newuser models.User
+func Create(ctx *gin.Context) {
+	var dataUser models.User
 	argon := argon2.DefaultConfig()
 
-	err := ctx.BindJSON(&newuser)
+	err := ctx.BindJSON(&dataUser)
 	if err != nil {
 		ctx.JSON(400, models.Response{
 			Success: false,
@@ -74,7 +74,7 @@ func Create(ctx *gin.Context){
 		return
 	}
 
-	encoded, err := argon.HashEncoded([]byte(newuser.Password))
+	encoded, err := argon.HashEncoded([]byte(dataUser.Password))
 	if err != nil {
 		ctx.JSON(400, models.Response{
 			Success: false,
@@ -82,14 +82,14 @@ func Create(ctx *gin.Context){
 		})
 	}
 
-	newuser.Password = string(encoded)
+	dataUser.Password = string(encoded)
 
-	models.Users = append(models.Users, newuser)
+	models.Users = append(models.Users, dataUser)
 
 	ctx.JSON(200, models.Response{
 		Success: true,
 		Message: "Success Create User!",
-		Data:    []models.User{newuser},
+		Data:    []models.User{dataUser},
 	})
 }
 
@@ -105,12 +105,12 @@ func Create(ctx *gin.Context){
 // @Failure 400 {object} models.Response
 // @Failure 404 {object} models.Response
 // @Router /users/{id} [put]
-func Edit(ctx *gin.Context){
+func Edit(ctx *gin.Context) {
 	id := ctx.Param("id")
 	argon := argon2.DefaultConfig()
-	var newuser models.User
+	var dataUser models.User
 
-	err := ctx.BindJSON(&newuser)
+	err := ctx.BindJSON(&dataUser)
 	if err != nil {
 		ctx.JSON(400, models.Response{
 			Success: false,
@@ -121,14 +121,14 @@ func Edit(ctx *gin.Context){
 
 	for i, user := range models.Users {
 		if fmt.Sprint(user.Id) == id {
-			if newuser.Name != "" {
-				models.Users[i].Name = newuser.Name
+			if dataUser.Name != "" {
+				models.Users[i].Name = dataUser.Name
 			}
-			if newuser.Email != "" {
-				models.Users[i].Email = newuser.Email
+			if dataUser.Email != "" {
+				models.Users[i].Email = dataUser.Email
 			}
-			if newuser.Password != "" {
-				encoded, err := argon.HashEncoded([]byte(newuser.Password))
+			if dataUser.Password != "" {
+				encoded, err := argon.HashEncoded([]byte(dataUser.Password))
 				if err != nil {
 					ctx.JSON(400, models.Response{
 						Success: false,
@@ -162,7 +162,7 @@ func Edit(ctx *gin.Context){
 // @Success 200 {object} models.Response
 // @Failure 404 {object} models.Response
 // @Router /users/{id} [delete]
-func Delete(ctx *gin.Context){
+func Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	for i, user := range models.Users {
 		if fmt.Sprint(user.Id) == id {
@@ -180,4 +180,53 @@ func Delete(ctx *gin.Context){
 		Success: false,
 		Message: "User not found",
 	})
+}
+
+// UploadProfile godoc
+// @Summary Upload dan update profile user
+// @Description Update data user (name, email, password) dan upload foto profil (single image upload)
+// @Tags Users
+// @Accept multipart/form-data
+// @Produce json
+// @Param pic formData file false "Foto profil user (image)"
+// @Success 200 {object} models.Response
+// @Failure 400 {object} models.Response
+// @Failure 404 {object} models.Response
+// @Failure 500 {object} models.Response
+// @Router /update/profile/{id} [patch]
+func UploadProfile(ctx *gin.Context) {
+	id := ctx.Param("id")
+	argon := argon2.DefaultConfig()
+	var dataUser models.User
+	for i, user := range models.Users {
+		if fmt.Sprint(user.Id) == id {
+			if dataUser.Name != "" {
+				models.Users[i].Name = dataUser.Name
+			}
+			if dataUser.Email != "" {
+				models.Users[i].Email = dataUser.Email
+			}
+			if dataUser.Password != "" {
+				encoded, err := argon.HashEncoded([]byte(dataUser.Password))
+				if err != nil {
+					ctx.JSON(400, models.Response{
+						Success: false,
+						Message: "Error hashing password",
+					})
+					return
+				}
+				models.Users[i].Password = string(encoded)
+			}
+			file, _ := ctx.FormFile("pic")
+			ctx.SaveUploadedFile(file, "./images/pic/"+file.Filename)
+			models.Users[i].ProfilePic = file.Filename
+
+			ctx.JSON(200, models.Response{
+				Success: true,
+				Message: "Success updated user!",
+				Data:    []models.User{models.Users[i]},
+			})
+			return
+		}
+	}
 }

@@ -18,11 +18,13 @@ definitions:
         type: string
       password:
         type: string
+      profile:
+        type: string
     type: object
 info:
   contact: {}
 paths:
-  /auth/login:
+  /login:
     post:
       consumes:
       - multipart/form-data
@@ -56,7 +58,7 @@ paths:
       summary: Login user
       tags:
       - Auth
-  /auth/register:
+  /register:
     post:
       consumes:
       - multipart/form-data
@@ -91,6 +93,39 @@ paths:
       summary: Register user baru
       tags:
       - Auth
+  /update/profile/{id}:
+    patch:
+      consumes:
+      - multipart/form-data
+      description: Update data user (name, email, password) dan upload foto profil
+        (single image upload)
+      parameters:
+      - description: Foto profil user (image)
+        in: formData
+        name: pic
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Upload dan update profile user
+      tags:
+      - Users
   /users:
     get:
       description: Mengambil semua data user

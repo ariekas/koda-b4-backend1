@@ -19,7 +19,7 @@ import (
 // @Success 200 {object} models.Response "Login berhasil"
 // @Failure 400 {object} models.Response "Email atau password salah"
 // @Failure 404 {object} models.Response "User tidak ditemukan"
-// @Router /auth/login [post]
+// @Router /login [post]
 func AuthLogin(ctx *gin.Context){
 	var login models.User
 		login.Email = ctx.PostForm("email")
@@ -62,7 +62,7 @@ func AuthLogin(ctx *gin.Context){
 // @Param password formData string true "Password minimal 8 karakter"
 // @Success 200 {object} models.Response "Registrasi berhasil"
 // @Failure 400 {object} models.Response "Input tidak valid"
-// @Router /auth/register [post]
+// @Router /register [post]
 func AuthRegister(ctx *gin.Context){
 	argon := argon2.DefaultConfig()
 	var newuser models.User

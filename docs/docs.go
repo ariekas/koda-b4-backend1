@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/login": {
+        "/login": {
             "post": {
                 "description": "Melakukan login user menggunakan email dan password",
                 "consumes": [
@@ -66,7 +66,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/register": {
+        "/register": {
             "post": {
                 "description": "Mendaftarkan user baru menggunakan name, email, dan password",
                 "consumes": [
@@ -111,6 +111,55 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Input tidak valid",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/update/profile/{id}": {
+            "patch": {
+                "description": "Update data user (name, email, password) dan upload foto profil (single image upload)",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Upload dan update profile user",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Foto profil user (image)",
+                        "name": "pic",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -322,6 +371,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "profile": {
                     "type": "string"
                 }
             }

@@ -26,4 +26,8 @@ func UsersRouter(r *gin.Engine) {
 	r.DELETE("/users/:id", func(ctx *gin.Context) {
 		controllers.Delete(ctx)
 	})
+
+	r.PATCH("/update/profile/:id", func(ctx *gin.Context) {
+		controllers.UploadProfile(ctx)
+	})
 }
