@@ -120,7 +120,7 @@ const docTemplate = `{
         },
         "/update/profile/{id}": {
             "patch": {
-                "description": "Update data user (name, email, password) dan upload foto profil (single image upload)",
+                "description": "upload foto profil",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -134,7 +134,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "file",
-                        "description": "Foto profil user (image)",
+                        "description": "Foto profil user max:2MB (image)",
                         "name": "pic",
                         "in": "formData"
                     }

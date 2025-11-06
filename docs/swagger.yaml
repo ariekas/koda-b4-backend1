@@ -97,10 +97,9 @@ paths:
     patch:
       consumes:
       - multipart/form-data
-      description: Update data user (name, email, password) dan upload foto profil
-        (single image upload)
+      description: upload foto profil
       parameters:
-      - description: Foto profil user (image)
+      - description: Foto profil user max:2MB (image)
         in: formData
         name: pic
         type: file
